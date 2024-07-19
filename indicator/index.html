@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SensorLess GPS FrontEND</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body>
+    <main class="mx-auto w-fit flex flex-col gap-4 mt-5">
+      <div class="flex gap-2 w-fit mx-auto">
+        <button
+          class="bg-black hover:bg-blue-700 text-white font-bold py-1 px-2 rounded"
+          type="button"
+          id="connect-ble"
+        >
+          connect-ble
+        </button>
+        <button
+          class="bg-black hover:bg-blue-700 text-white font-bold py-1 px-2 rounded"
+          type="button"
+          id="stop"
+        >
+          stop
+        </button>
+      </div>
+      <div class="grid grid-cols-2 gap-6">
+        <div class="border border-black rounded-3xl p-2 h-32 w-40">
+          <p class="mt-0 h-fit">Gear</p>
+          <p class="mx-auto w-fit text-6xl font-bold mt-2" id="gear">0</p>
+        </div>
+
+        <div class="border border-black rounded-3xl p-2 h-32 w-40">
+          <p class="mt-0 h-fit">Speed</p>
+          <p class="mx-auto w-fit text-6xl font-bold mt-2" id="speed">20</p>
+        </div>
+      </div>
+    </main>
+    <script>
+      const kUARTServiceUUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
+      const kRXCharacteristicUUID = "beb5483f-36e1-4688-b7f5-ea07361b26a8";
+
+      let device;
+      let server;
+      let service;
+      let characteristicRx;
+      let messageLog = [];
+      let watchID;
+      const options = {
+        enableHighAccuracy: true, // 位置情報の精度を高める
+        timeout: 100, // タイムアウトまでの時間（ミリ秒）
+        maximumAge: 0, // キャッシュされた位置情報の最大年齢
+      };
+
+      const readData = async (characteristic) => {
+        characteristic.addEventListener(
+          "characteristicvaluechanged",
+          (event) => {
+            const gear = new TextDecoder().decode(event.target.value);
+            console.log("gear: " + gear);
+            document.getElementById("gear").textContent = gear;
+          }
+        );
+
+        // 通知を開始
+        await characteristic.startNotifications();
+      };
+
+      document
+        .getElementById("connect-ble")
+        .addEventListener("click", async () => {
+          watchID = navigator.geolocation.watchPosition(
+            (position) => {
+              let { latitude, longitude, speed } = position.coords;
+              speed = (speed * 3600) / 1000;
+              if (server) {
+                sendData();
+              }
+              document.getElementById("speed").textContent = Math.floor(speed);
+            },
+            null,
+            options
+          );
+          await sendData();
+        });
+
+      document.getElementById("stop").addEventListener("click", () => {
+        navigator.geolocation.clearWatch(watchID);
+      });
+
+      const sendData = async (message) => {
+        if (!device) {
+          try {
+            device = await navigator.bluetooth.requestDevice({
+              filters: [{ services: [kUARTServiceUUID] }],
+            });
+            device.addEventListener("gattserverdisconnected", async () => {
+              server = undefined;
+              service = undefined;
+              characteristicRx = undefined;
+              characteristicTx = undefined;
+              await initBle();
+            });
+            await initBle();
+          } catch (error) {
+            console.log("Error: " + error);
+            return;
+          }
+        }
+      };
+
+      const initBle = async () => {
+        server = await device.gatt.connect();
+        service = await server.getPrimaryService(kUARTServiceUUID);
+        characteristicRx = await service.getCharacteristic(
+          kRXCharacteristicUUID
+        );
+        readData(characteristicRx);
+      };
+    </script>
+  </body>
+</html>
