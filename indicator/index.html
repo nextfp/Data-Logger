@@ -24,7 +24,7 @@
           stop
         </button>
       </div>
-      <div class="grid grid-cols-2 gap-6">
+      <div class="grid grid-cols-3 gap-6">
         <div class="border border-black rounded-3xl p-2 h-32 w-40">
           <p class="mt-0 h-fit">Gear</p>
           <p class="mx-auto w-fit text-6xl font-bold mt-2" id="gear">0</p>
@@ -33,6 +33,11 @@
         <div class="border border-black rounded-3xl p-2 h-32 w-40">
           <p class="mt-0 h-fit">Speed</p>
           <p class="mx-auto w-fit text-6xl font-bold mt-2" id="speed">20</p>
+        </div>
+
+        <div class="border border-black rounded-3xl p-2 h-32 w-40">
+          <p class="mt-0 h-fit">RPM</p>
+          <p class="mx-auto w-fit text-6xl font-bold mt-2" id="RPM">100</p>
         </div>
       </div>
     </main>
@@ -56,9 +61,14 @@
         characteristic.addEventListener(
           "characteristicvaluechanged",
           (event) => {
-            const gear = new TextDecoder().decode(event.target.value);
-            console.log("gear: " + gear);
+            const getData = new TextDecoder().decode(event.target.value);
+            console.log(getData);
+            let [gear, RPM] = getData.split(",");
+            console.log("gear:", gear);
+            console.log("RPM:", RPM);
+            RPM = Math.floor(RPM * 10) / 10;
             document.getElementById("gear").textContent = gear;
+            document.getElementById("RPM").textContent = RPM;
           }
         );
 

@@ -31,11 +31,14 @@ class MyServerCallbacks : public BLEServerCallbacks
 
 #define TEMP_SENSOR_PIN 35
 #define GEAR_SENSOR_PIN 36
+#define RPM_SENSOR_PIN 26
 
 // put function declarations here:
 int getTemperature();
 int getGearPos();
 void BLESetup();
+void addRpmCounter();
+int calcRPM();
 
 void setup()
 {
@@ -49,11 +52,14 @@ void setup()
   Serial.begin(115200);
   pinMode(TEMP_SENSOR_PIN, ANALOG);
   pinMode(GEAR_SENSOR_PIN, ANALOG);
+  attachInterrupt(digitalPinToInterrupt(RPM_SENSOR_PIN), addRpmCounter, RISING);
   BLESetup();
 }
 
 void loop()
 {
+  delay(200);
+  detachInterrupt(RPM_SENSOR_PIN);
   // put your main code here, to run repeatedly:
   Serial.print("Temp: ");
   Serial.println(getTemperature());
@@ -62,12 +68,12 @@ void loop()
   if (deviceConnected)
   {
     Serial.println("send");
-    pTxCharacteristic->setValue(std::to_string(gear));
+    pTxCharacteristic->setValue(std::to_string(gear) + "," + std::to_string(calcRPM()) + ",");
     pTxCharacteristic->notify();
   }
   M5.Lcd.setCursor(10, 70);
   M5.Display.print(gear);
-  delay(100);
+  attachInterrupt(digitalPinToInterrupt(RPM_SENSOR_PIN), addRpmCounter, RISING);
 }
 
 double fixVoltage(double voltage)
@@ -140,4 +146,18 @@ void BLESetup()
   pAdvertising->setMinPreferred(0x06); // iPhone接続の問題に役立つ
   pAdvertising->setMinPreferred(0x12);
   BLEDevice::startAdvertising();
+}
+
+double rpmCounter = 0;
+
+void addRpmCounter()
+{
+  rpmCounter++;
+}
+
+int calcRPM()
+{
+  double rpm = rpmCounter / 100 * 60000;
+  rpmCounter = 0;
+  return rpm;
 }
