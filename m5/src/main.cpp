@@ -114,9 +114,9 @@ int getGearPos()
     return 4;
   case 350 ... 370:
     return 5;
-  case 380 ... 400:
+  case 380 ... 390:
     return 6;
-  case 405 ... 500:
+  case 395 ... 500:
     return 0;
   default:
     return 0;
