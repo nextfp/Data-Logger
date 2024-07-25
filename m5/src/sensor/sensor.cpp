@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include "sensor.h"
+#include "sensor.hpp"
 
 double fixVoltage(double voltage)
 {
@@ -38,4 +38,15 @@ int getGearPos(int pin)
     default:
         return 0;
     }
+};
+
+void RPM::RPMPinCallBack()
+{
+    rpmCounter++;
+};
+int RPM::getRPM(int waitTime)
+{
+    double rpm = rpmCounter * 60 / waitTime;
+    rpmCounter = 0;
+    return rpm;
 };

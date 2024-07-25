@@ -7,11 +7,11 @@
 #define GEAR_SENSOR_PIN 36
 #define RPM_SENSOR_PIN 26
 
+#define WAIT_TIME 200
+
 // put function declarations here:
 BLEController *IndiBLEController = NULL;
-
-void addRpmCounter();
-int calcRPM();
+RPM *rpmController = new RPM;
 
 void setup()
 {
@@ -26,16 +26,18 @@ void setup()
   pinMode(TEMP_SENSOR_PIN, ANALOG);
   pinMode(GEAR_SENSOR_PIN, ANALOG);
   IndiBLEController = new BLEController;
+  attachInterrupt(digitalPinToInterrupt(RPM_SENSOR_PIN), []()
+                  { rpmController->RPMPinCallBack(); }, RISING);
 }
 
 void loop()
 {
-  delay(200);
+  delay(WAIT_TIME);
   detachInterrupt(RPM_SENSOR_PIN);
   // put your main code here, to run repeatedly:
   int gear = getGearPos(GEAR_SENSOR_PIN);
   int temperature = getTemperature(TEMP_SENSOR_PIN);
-  int rpm = calcRPM();
+  int rpm = rpmController->getRPM(WAIT_TIME);
   IndiBLEController->sendData(String(gear) + "," + String(rpm) + ",");
   M5.Lcd.setCursor(10, 10);
   M5.Display.print(gear);
@@ -43,18 +45,6 @@ void loop()
   M5.Display.print(temperature);
   M5.Lcd.setCursor(10, 90);
   M5.Display.print(rpm);
-  attachInterrupt(digitalPinToInterrupt(RPM_SENSOR_PIN), addRpmCounter, RISING);
-}
-double rpmCounter = 0;
-
-void addRpmCounter()
-{
-  rpmCounter++;
-}
-
-int calcRPM()
-{
-  double rpm = rpmCounter / 100 * 60000;
-  rpmCounter = 0;
-  return rpm;
+  attachInterrupt(digitalPinToInterrupt(RPM_SENSOR_PIN), []()
+                  { rpmController->RPMPinCallBack(); }, RISING);
 }
