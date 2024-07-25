@@ -5,8 +5,13 @@
 
 #define TEMP_SENSOR_PIN 35
 #define GEAR_SENSOR_PIN 36
+#define RPM_SENSOR_PIN 26
 
+#define WAIT_TIME 200
+
+// put function declarations here:
 BLEController *IndiBLEController = NULL;
+RPM *rpmController = new RPM;
 
 void setup()
 {
@@ -21,17 +26,25 @@ void setup()
   pinMode(TEMP_SENSOR_PIN, ANALOG);
   pinMode(GEAR_SENSOR_PIN, ANALOG);
   IndiBLEController = new BLEController;
+  attachInterrupt(digitalPinToInterrupt(RPM_SENSOR_PIN), []()
+                  { rpmController->RPMPinCallBack(); }, RISING);
 }
 
 void loop()
 {
+  delay(WAIT_TIME);
+  detachInterrupt(RPM_SENSOR_PIN);
   // put your main code here, to run repeatedly:
   int gear = getGearPos(GEAR_SENSOR_PIN);
   int temperature = getTemperature(TEMP_SENSOR_PIN);
-  IndiBLEController->sendData(String(gear));
+  int rpm = rpmController->getRPM(WAIT_TIME);
+  IndiBLEController->sendData(String(gear) + "," + String(rpm) + ",");
   M5.Lcd.setCursor(10, 10);
   M5.Display.print(gear);
   M5.Lcd.setCursor(10, 50);
   M5.Display.print(temperature);
-  delay(100);
+  M5.Lcd.setCursor(10, 90);
+  M5.Display.print(rpm);
+  attachInterrupt(digitalPinToInterrupt(RPM_SENSOR_PIN), []()
+                  { rpmController->RPMPinCallBack(); }, RISING);
 }
