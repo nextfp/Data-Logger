@@ -33,18 +33,18 @@ void setup()
 void loop()
 {
   delay(WAIT_TIME);
-  detachInterrupt(RPM_SENSOR_PIN);
   // put your main code here, to run repeatedly:
   int gear = getGearPos(GEAR_SENSOR_PIN);
   int temperature = getTemperature(TEMP_SENSOR_PIN);
+  detachInterrupt(RPM_SENSOR_PIN);
   int rpm = rpmController->getRPM(WAIT_TIME);
-  IndiBLEController->sendData(String(gear) + "," + String(rpm) + ",");
+  attachInterrupt(digitalPinToInterrupt(RPM_SENSOR_PIN), []()
+                  { rpmController->RPMPinCallBack(); }, RISING);
+  IndiBLEController->sendData(String(gear) + "," + String(rpm) + "," + String(temperature));
   M5.Lcd.setCursor(10, 10);
   M5.Display.print(gear);
   M5.Lcd.setCursor(10, 50);
   M5.Display.print(temperature);
   M5.Lcd.setCursor(10, 90);
   M5.Display.print(rpm);
-  attachInterrupt(digitalPinToInterrupt(RPM_SENSOR_PIN), []()
-                  { rpmController->RPMPinCallBack(); }, RISING);
 }
