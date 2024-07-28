@@ -69,7 +69,7 @@
           (event) => {
             const getData = new TextDecoder().decode(event.target.value);
             console.log(getData);
-            let [gear, RPM, temperature] = getData.split(",");
+            let [gear, RPM, temperature, angle] = getData.split(",");
             console.log("gear:", gear);
             console.log("RPM:", RPM);
             console.log("temperature:", temperature);
@@ -77,6 +77,9 @@
             document.getElementById("gear").textContent = gear;
             document.getElementById("RPM").textContent = RPM;
             document.getElementById("temperature").textContent = temperature;
+            document.querySelector(
+              "main"
+            ).style.transform = `rotate(${angle}deg)`;
           }
         );
 

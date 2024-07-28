@@ -1,5 +1,6 @@
 int getTemperature(int pin);
 int getGearPos(int pin);
+int getAngle(int pin);
 
 class RPM
 {

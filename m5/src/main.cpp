@@ -6,6 +6,7 @@
 #define TEMP_SENSOR_PIN 35
 #define GEAR_SENSOR_PIN 36
 #define RPM_SENSOR_PIN 26
+#define ANGLE_SENSOR_PIN 34
 
 #define WAIT_TIME 200
 
@@ -25,6 +26,7 @@ void setup()
   Serial.begin(115200);
   pinMode(TEMP_SENSOR_PIN, ANALOG);
   pinMode(GEAR_SENSOR_PIN, ANALOG);
+  pinMode(ANGLE_SENSOR_PIN, ANALOG);
   IndiBLEController = new BLEController;
   attachInterrupt(digitalPinToInterrupt(RPM_SENSOR_PIN), []()
                   { rpmController->RPMPinCallBack(); }, RISING);
@@ -40,7 +42,8 @@ void loop()
   int rpm = rpmController->getRPM(WAIT_TIME);
   attachInterrupt(digitalPinToInterrupt(RPM_SENSOR_PIN), []()
                   { rpmController->RPMPinCallBack(); }, RISING);
-  IndiBLEController->sendData(String(gear) + "," + String(rpm) + "," + String(temperature));
+  int angle = getAngle(ANGLE_SENSOR_PIN);
+  IndiBLEController->sendData(String(gear) + "," + String(rpm) + "," + String(temperature) + "," + String(angle));
   M5.Lcd.setCursor(10, 10);
   M5.Display.print(gear);
   M5.Lcd.setCursor(10, 50);
