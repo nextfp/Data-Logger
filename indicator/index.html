@@ -107,23 +107,25 @@
       });
 
       const sendData = async (message) => {
-        if (!device) {
-          try {
-            device = await navigator.bluetooth.requestDevice({
-              filters: [{ services: [kUARTServiceUUID] }],
-            });
-            device.addEventListener("gattserverdisconnected", async () => {
-              server = undefined;
-              service = undefined;
-              characteristicRx = undefined;
-              characteristicTx = undefined;
-              await initBle();
-            });
+        try {
+          device = await navigator.bluetooth.requestDevice({
+            filters: [{ services: [kUARTServiceUUID] }],
+          });
+          device.addEventListener("gattserverdisconnected", async () => {
+            server = undefined;
+            service = undefined;
+            characteristicRx = undefined;
+            characteristicTx = undefined;
             await initBle();
-          } catch (error) {
-            console.log("Error: " + error);
-            return;
-          }
+          });
+          server = undefined;
+          service = undefined;
+          characteristicRx = undefined;
+          characteristicTx = undefined;
+          await initBle();
+        } catch (error) {
+          console.log("Error: " + error);
+          return;
         }
       };
 
