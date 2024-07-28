@@ -3,6 +3,8 @@
 
 class BLEStatus;
 
+class RxCallbacks;
+
 class BLEController
 {
 private:
@@ -11,8 +13,10 @@ private:
     BLECharacteristic *pTxCharacteristic;
     BLECharacteristic *pRxCharacteristic;
     bool deviceConnected = false;
+    RxCallbacks *rxCallbacks = NULL;
 
 public:
     BLEController();
     void sendData(String data);
+    std::string getData();
 };

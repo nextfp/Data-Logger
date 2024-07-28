@@ -33,6 +33,24 @@ public:
     }
 };
 
+class RxCallbacks : public BLECharacteristicCallbacks
+{
+public:
+    const char *data = "";
+
+private:
+    void onWrite(BLECharacteristic *pCharacteristic)
+    {
+        std::string rxValue = pCharacteristic->getValue();
+        if (rxValue.length() > 0)
+        {
+            data = rxValue.c_str();
+            Serial.print("Received Value: ");
+            Serial.println(data);
+        }
+    }
+};
+
 BLEController::BLEController()
 {
     BLEDevice::init("ESP32_BLE_SERVER"); // この名前がスマホなどに表示される
@@ -44,6 +62,13 @@ BLEController::BLEController()
         CHARACTERISTIC_UUID_TX,
         BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_READ);
     pTxCharacteristic->addDescriptor(new BLE2902());
+    pRxCharacteristic = pService->createCharacteristic(
+        CHARACTERISTIC_UUID_RX,
+        BLECharacteristic::PROPERTY_READ |
+            BLECharacteristic::PROPERTY_WRITE); // 読み書き可能にする
+
+    rxCallbacks = new RxCallbacks();
+    pRxCharacteristic->setCallbacks(rxCallbacks);
     pService->start();
     BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
     pAdvertising->addServiceUUID(SERVICE_UUID);
@@ -60,4 +85,9 @@ void BLEController::sendData(String data)
         pTxCharacteristic->setValue(data.c_str());
         pTxCharacteristic->notify();
     }
+}
+
+std::string BLEController::getData()
+{
+    return rxCallbacks->data;
 }
