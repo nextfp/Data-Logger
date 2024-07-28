@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <M5Unified.h>
+#include <SD.h>
 #include "sensor/sensor.hpp"
 #include "ble/ble.hpp"
 
@@ -12,6 +13,7 @@
 // put function declarations here:
 BLEController *IndiBLEController = NULL;
 RPM *rpmController = new RPM;
+int loopCount = 0;
 
 void setup()
 {
@@ -47,4 +49,14 @@ void loop()
   M5.Display.print(rpm);
   attachInterrupt(digitalPinToInterrupt(RPM_SENSOR_PIN), []()
                   { rpmController->RPMPinCallBack(); }, RISING);
+  if (loopCount % 100 == 0)
+  {
+    SD.begin(4, SPI, 15000000);
+    const char *path = IndiBLEController->getData().c_str();
+    const char *filename = ("/" + std::string(path) + ".csv").c_str();
+    File file = SD.open(filename, FILE_APPEND);
+    file.println(String(gear) + "," + String(rpm) + ",");
+    file.close();
+  }
+  loopCount++;
 }

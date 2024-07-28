@@ -43,6 +43,7 @@
     </main>
     <script>
       const kUARTServiceUUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
+      const kTXCharacteristicUUID = "beb5483e-36e1-4688-b7f5-ea07361b26a9";
       const kRXCharacteristicUUID = "beb5483f-36e1-4688-b7f5-ea07361b26a8";
 
       let device;
@@ -79,18 +80,7 @@
       document
         .getElementById("connect-ble")
         .addEventListener("click", async () => {
-          watchID = navigator.geolocation.watchPosition(
-            (position) => {
-              let { latitude, longitude, speed } = position.coords;
-              speed = (speed * 3600) / 1000;
-              if (server) {
-                sendData();
-              }
-              document.getElementById("speed").textContent = Math.floor(speed);
-            },
-            null,
-            options
-          );
+          await firstInitBle();
           await sendData();
         });
 
@@ -98,32 +88,54 @@
         navigator.geolocation.clearWatch(watchID);
       });
 
-      const sendData = async (message) => {
-        if (!device) {
-          try {
-            device = await navigator.bluetooth.requestDevice({
-              filters: [{ services: [kUARTServiceUUID] }],
-            });
-            device.addEventListener("gattserverdisconnected", async () => {
-              server = undefined;
-              service = undefined;
-              characteristicRx = undefined;
-              characteristicTx = undefined;
-              await initBle();
-            });
+      const sendData = async () => {
+        const date = new Date().getTime();
+        const encoder = new TextEncoder();
+        const data = encoder.encode(date);
+        try {
+          await characteristicTx.writeValue(data);
+          console.log("send data: " + date);
+        } catch (error) {
+          console.log("Error: " + error);
+        }
+      };
+
+      const firstInitBle = async () => {
+        watchID = navigator.geolocation.watchPosition(
+          (position) => {
+            let { latitude, longitude, speed } = position.coords;
+            speed = (speed * 3600) / 1000;
+            document.getElementById("speed").textContent = Math.floor(speed);
+          },
+          null,
+          options
+        );
+        try {
+          device = await navigator.bluetooth.requestDevice({
+            filters: [{ services: [kUARTServiceUUID] }],
+          });
+          device.addEventListener("gattserverdisconnected", async () => {
             await initBle();
-          } catch (error) {
-            console.log("Error: " + error);
-            return;
-          }
+          });
+          await initBle();
+        } catch (error) {
+          console.log("Error: " + error);
+          return;
         }
       };
 
       const initBle = async () => {
+        server = undefined;
+        service = undefined;
+        characteristicRx = undefined;
+        characteristicTx = undefined;
         server = await device.gatt.connect();
         service = await server.getPrimaryService(kUARTServiceUUID);
         characteristicRx = await service.getCharacteristic(
           kRXCharacteristicUUID
+        );
+        characteristicTx = await service.getCharacteristic(
+          kTXCharacteristicUUID
         );
         readData(characteristicRx);
       };
