@@ -40,6 +40,18 @@ int getGearPos(int pin)
     }
 };
 
+int getAngle(int pin)
+{
+    int voltage = 0;
+    for (int i = 0; i < 10; i++)
+    {
+        voltage += analogReadMilliVolts(pin);
+    }
+    voltage /= 10;
+    int angle = voltage - 1670;
+    return angle;
+}
+
 void RPM::RPMPinCallBack()
 {
     rpmCounter++;
