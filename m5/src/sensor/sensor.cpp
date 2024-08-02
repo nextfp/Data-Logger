@@ -58,7 +58,7 @@ void RPM::RPMPinCallBack()
 };
 int RPM::getRPM(int waitTime)
 {
-    double rpm = rpmCounter * 60 / waitTime;
+    double rpm = rpmCounter * 60 * 1000 / waitTime / 8;
     rpmCounter = 0;
     return rpm;
 };
