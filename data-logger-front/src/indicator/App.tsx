@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { BleType, machineStatusType, BleController } from "./ble";
 import { gpsStatusType, startGPS } from "./gps";
+import {
+  RealtimeDatabaseHostType,
+  RealtimeDatabase,
+} from "../lib/firebase/firebase";
 
 export default function App() {
   const [machineStatus, setMachineStatus] = useState<machineStatusType>({
@@ -16,15 +20,29 @@ export default function App() {
     heading: 0,
   });
 
+  const realtimeDatabase: RealtimeDatabaseHostType = new RealtimeDatabase();
+
   const ble: BleType = new BleController((machineStatus: machineStatusType) => {
     setMachineStatus(machineStatus);
+    realtimeDatabase.send({
+      latitude: gpsStatus.latitude,
+      longitude: gpsStatus.longitude,
+      speed: gpsStatus.speed,
+      heading: gpsStatus.heading,
+      gear: machineStatus.gear,
+      rpm: machineStatus.rpm,
+      temperature: machineStatus.temperature,
+      angle: machineStatus.angle,
+    });
   });
+
   const clickConnect = () => {
     ble.firstConnect();
     startGPS((gpsStatus: gpsStatusType) => {
       setGpsStatus(gpsStatus);
     });
   };
+
   return (
     <main className="mx-auto w-fit flex flex-col gap-4 mt-5">
       <div className="flex gap-2 w-fit mx-auto">
