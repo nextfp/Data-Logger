@@ -45,7 +45,7 @@ void loop()
   attachInterrupt(digitalPinToInterrupt(RPM_SENSOR_PIN), []()
                   { rpmController->RPMPinCallBack(); }, RISING);
   int angle = getAngle(ANGLE_SENSOR_PIN);
-  IndiBLEController->sendData(String(gear) + "," + String(rpm) + "," + String(temperature) + "," + String(0));
+  IndiBLEController->sendData(String(gear) + "," + String(rpm) + "," + String(temperature) + "," + String(angle));
   M5.Lcd.setCursor(10, 10);
   M5.Display.print(gear);
   M5.Lcd.setCursor(10, 50);
@@ -53,9 +53,9 @@ void loop()
   M5.Lcd.setCursor(10, 90);
   M5.Display.print(rpm);
   SD.begin(4, SPI, 15000000);
-  const char *path = IndiBLEController->getData().c_str();
-  const char *filename = ("/" + std::string(path) + ".csv").c_str();
+  const char *filename = ("/" + getFilePath() + ".csv").c_str();
+  Serial.println(filename);
   File file = SD.open(filename, FILE_APPEND);
-  file.println(String(gear) + "," + String(rpm) + "," + String(temperature) + "," + String(angle));
+  file.println((getTime() + "," + std::to_string(gear) + "," + std::to_string(rpm) + "," + std::to_string(temperature) + "," + std::to_string(angle) + "," + getLatitude() + "," + getLongitude() + "," + getSpeed()).c_str());
   file.close();
 }

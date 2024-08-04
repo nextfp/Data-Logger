@@ -20,3 +20,10 @@ public:
     void sendData(String data);
     std::string getData();
 };
+
+std::string getFilePath();
+std::string getTime();
+std::string getLatitude();
+std::string getLongitude();
+std::string getSpeed();
+std::string getHeading();
