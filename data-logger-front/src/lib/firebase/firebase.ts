@@ -3,6 +3,7 @@ import { getFirebaseDatabase } from "./getFirebase";
 
 export interface RealtimeDatabaseHostType {
   send: (data: databaseType) => void;
+  updateOnlineStatus: (bleStatus: boolean) => void;
 }
 
 export type databaseType = {
@@ -40,6 +41,13 @@ export class RealtimeDatabase implements RealtimeDatabaseHostType {
       rpm: data.rpm,
       temperature: data.temperature,
       angle: data.angle,
+    });
+  };
+
+  updateOnlineStatus: (bleStatus: boolean) => void = (bleStatus: boolean) => {
+    set(ref(this.database, "online"), {
+      time: new Date().getTime(),
+      bleStatus: bleStatus,
     });
   };
 }

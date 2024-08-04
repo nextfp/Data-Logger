@@ -35,6 +35,30 @@ export default function App() {
       angle: machineStatus.angle,
     });
   });
+  useEffect(() => {
+    const intervalId1 = setInterval(async () => {
+      const status = ble.getConnectionStatus();
+      console.log(status);
+      realtimeDatabase.updateOnlineStatus(status);
+      if (!status) {
+        ble.reconnect();
+      }
+    }, 3000);
+
+    const intervalId2 = setInterval(async () => {
+      const SDFilePath = new Date().toLocaleDateString("sv-SE");
+      await ble.sendData(
+        `${SDFilePath},${new Date().getTime()},${gpsStatus.latitude},${
+          gpsStatus.longitude
+        },${gpsStatus.speed},${gpsStatus.heading}`
+      );
+    }, 300);
+
+    return () => {
+      clearInterval(intervalId1);
+      clearInterval(intervalId2);
+    };
+  }, []);
 
   const clickConnect = () => {
     ble.firstConnect();
