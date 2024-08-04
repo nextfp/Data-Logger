@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { BleType, machineStatusType, BleController } from "./ble";
 import { gpsStatusType, startGPS } from "./gps";
+import { Toaster, toast } from "sonner";
 import {
   RealtimeDatabaseHostType,
   RealtimeDatabase,
@@ -19,25 +20,63 @@ export default function App() {
     speed: 0,
     heading: 0,
   });
+  const [connectionMemory, setConnectionMemory] = useState<boolean>(false);
 
-  const realtimeDatabase: RealtimeDatabaseHostType = new RealtimeDatabase();
+  const realtimeDatabase = useRef<RealtimeDatabaseHostType>(
+    new RealtimeDatabase()
+  );
 
-  const ble: BleType = new BleController((machineStatus: machineStatusType) => {
-    setMachineStatus(machineStatus);
-    realtimeDatabase.send({
-      latitude: gpsStatus.latitude,
-      longitude: gpsStatus.longitude,
-      speed: gpsStatus.speed,
-      heading: gpsStatus.heading,
-      gear: machineStatus.gear,
-      rpm: machineStatus.rpm,
-      temperature: machineStatus.temperature,
-      angle: machineStatus.angle,
-    });
-  });
+  const ble = useRef<BleType>(
+    new BleController((machineStatus: machineStatusType) => {
+      setMachineStatus(machineStatus);
+      realtimeDatabase.current.send({
+        latitude: gpsStatus.latitude,
+        longitude: gpsStatus.longitude,
+        speed: gpsStatus.speed,
+        heading: gpsStatus.heading,
+        gear: machineStatus.gear,
+        rpm: machineStatus.rpm,
+        temperature: machineStatus.temperature,
+        angle: machineStatus.angle,
+      });
+    })
+  );
+  useEffect(() => {
+    const intervalId1 = setInterval(async () => {
+      const status = ble.current.getConnectionStatus();
+      realtimeDatabase.current.updateOnlineStatus(status);
+      if (!status) {
+        ble.current.reconnect();
+      }
+      if (status !== connectionMemory) {
+        setConnectionMemory(status);
+        console.log("status", status);
+        console.log("memory", connectionMemory);
+        if (status) {
+          toast.success("マイコンと接続されました。");
+        } else {
+          toast.error("マイコンとの接続が切れました。");
+        }
+      }
+    }, 3000);
+
+    const intervalId2 = setInterval(async () => {
+      const SDFilePath = new Date().toLocaleDateString("sv-SE");
+      await ble.current.sendData(
+        `${SDFilePath},${new Date().getTime()},${gpsStatus.latitude},${
+          gpsStatus.longitude
+        },${gpsStatus.speed},${gpsStatus.heading}`
+      );
+    }, 300);
+
+    return () => {
+      clearInterval(intervalId1);
+      clearInterval(intervalId2);
+    };
+  }, [connectionMemory]);
 
   const clickConnect = () => {
-    ble.firstConnect();
+    ble.current.firstConnect();
     startGPS((gpsStatus: gpsStatusType) => {
       setGpsStatus(gpsStatus);
     });
@@ -45,6 +84,7 @@ export default function App() {
 
   return (
     <main className="mx-auto w-fit flex flex-col gap-4 mt-5">
+      <Toaster position="top-right" />
       <div className="flex gap-2 w-fit mx-auto">
         <button
           className="bg-black dark:bg-white hover:bg-blue-700 text-white dark:text-black font-bold py-1 px-2 rounded"
@@ -83,6 +123,9 @@ export default function App() {
           </p>
         </div>
       </div>
+      {!connectionMemory && (
+        <p className="mx-auto">マイコンと接続されていません。</p>
+      )}
     </main>
   );
 }

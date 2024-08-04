@@ -1,6 +1,8 @@
 export interface BleType {
   firstConnect: () => void;
-  sendData: (data: string) => void;
+  sendData: (data: string) => Promise<void>;
+  getConnectionStatus: () => boolean;
+  reconnect: () => void;
 }
 
 export type machineStatusType = {
@@ -19,6 +21,7 @@ export class BleController implements BleType {
   private service: BluetoothRemoteGATTService | undefined;
   private characteristicRx: BluetoothRemoteGATTCharacteristic | undefined;
   private characteristicTx: BluetoothRemoteGATTCharacteristic | undefined;
+  private isConnected: boolean = false;
 
   private readCallback: (data: machineStatusType) => void;
 
@@ -32,6 +35,8 @@ export class BleController implements BleType {
         filters: [{ services: [this.kUARTServiceUUID] }],
       });
       this.device.addEventListener("gattserverdisconnected", () => {
+        this.isConnected = false;
+        this.initProperties();
         this.initBle();
       });
       this.initBle();
@@ -60,6 +65,13 @@ export class BleController implements BleType {
         this.characteristicRx = await this.service?.getCharacteristic(
           this.kRXCharacteristicUUID
         );
+        if (this.characteristicRx) {
+          console.log("characteristicRx is initialized");
+        }
+        if (this.characteristicTx) {
+          console.log("characteristicTx is initialized");
+        }
+        this.isConnected = true;
         this.readData();
       } catch (error) {
         console.error("BLE Initialization error:", error);
@@ -94,21 +106,28 @@ export class BleController implements BleType {
     }
   };
 
-  sendData: (data: string) => void = (data: string) => {
+  sendData: (data: string) => Promise<void> = async (data: string) => {
     const encoder = new TextEncoder();
     const encodeData = encoder.encode(data);
     if (this.characteristicTx) {
-      this.characteristicTx
-        .writeValue(encodeData)
-        .then(() => {
-          console.log("sendData: " + data);
-        })
-        .catch((error) => {
-          console.error("Error writing value: " + error);
-        });
-      console.log("sendData: " + data);
-    } else {
-      console.error("characteristicTx is not initialized");
+      try {
+        await this.characteristicTx.writeValue(encodeData);
+        console.log("sendData: " + data);
+      } catch (error) {
+        console.log("Error: " + error);
+      }
+    }
+  };
+
+  getConnectionStatus: () => boolean = () => {
+    return this.isConnected;
+  };
+
+  reconnect: () => void = () => {
+    if (this.device) {
+      console.log("try to reconnect");
+      this.initProperties();
+      this.initBle();
     }
   };
 }
