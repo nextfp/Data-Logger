@@ -29,16 +29,6 @@ export default function App() {
   const ble = useRef<BleType>(
     new BleController((machineStatus: machineStatusType) => {
       setMachineStatus(machineStatus);
-      realtimeDatabase.current.send({
-        latitude: gpsStatus.latitude,
-        longitude: gpsStatus.longitude,
-        speed: gpsStatus.speed,
-        heading: gpsStatus.heading,
-        gear: machineStatus.gear,
-        rpm: machineStatus.rpm,
-        temperature: machineStatus.temperature,
-        angle: machineStatus.angle,
-      });
     })
   );
   useEffect(() => {
@@ -67,13 +57,23 @@ export default function App() {
           gpsStatus.longitude
         },${gpsStatus.speed},${gpsStatus.heading}`
       );
+      realtimeDatabase.current.send({
+        latitude: gpsStatus.latitude,
+        longitude: gpsStatus.longitude,
+        speed: gpsStatus.speed,
+        heading: gpsStatus.heading,
+        gear: machineStatus.gear,
+        rpm: machineStatus.rpm,
+        temperature: machineStatus.temperature,
+        angle: machineStatus.angle,
+      });
     }, 300);
 
     return () => {
       clearInterval(intervalId1);
       clearInterval(intervalId2);
     };
-  }, [connectionMemory]);
+  }, [connectionMemory, machineStatus, gpsStatus]);
 
   const clickConnect = () => {
     ble.current.firstConnect();
