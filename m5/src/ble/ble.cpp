@@ -9,6 +9,14 @@
 #define CHARACTERISTIC_UUID_TX "beb5483f-36e1-4688-b7f5-ea07361b26a8"
 #define CHARACTERISTIC_UUID_RX "beb5483e-36e1-4688-b7f5-ea07361b26a9"
 
+std::string readData = "Hello World!";
+std::string filePath = "";
+std::string nowTime = "";
+std::string latitude = "";
+std::string longitude = "";
+std::string speed = "";
+std::string heading = "";
+
 class BLEStatus : public BLEServerCallbacks
 {
 private:
@@ -35,8 +43,6 @@ public:
 
 class RxCallbacks : public BLECharacteristicCallbacks
 {
-public:
-    const char *data = "";
 
 private:
     void onWrite(BLECharacteristic *pCharacteristic)
@@ -44,9 +50,53 @@ private:
         std::string rxValue = pCharacteristic->getValue();
         if (rxValue.length() > 0)
         {
-            data = rxValue.c_str();
-            Serial.print("Received Value: ");
-            Serial.println(data);
+            size_t start = 0;
+            size_t end = rxValue.find(',');
+
+            // 各変数に順番に値を格納
+            if (end != std::string::npos)
+            {
+                filePath = rxValue.substr(start, end - start);
+                start = end + 1;
+                end = rxValue.find(',', start);
+            }
+
+            if (end != std::string::npos)
+            {
+                nowTime = rxValue.substr(start, end - start);
+                start = end + 1;
+                end = rxValue.find(',', start);
+            }
+
+            if (end != std::string::npos)
+            {
+                latitude = rxValue.substr(start, end - start);
+                start = end + 1;
+                end = rxValue.find(',', start);
+            }
+
+            if (end != std::string::npos)
+            {
+                longitude = rxValue.substr(start, end - start);
+                start = end + 1;
+                end = rxValue.find(',', start);
+            }
+
+            if (end != std::string::npos)
+            {
+                speed = rxValue.substr(start, end - start);
+                start = end + 1;
+                end = rxValue.find(',', start);
+            }
+
+            if (end != std::string::npos)
+            {
+                heading = rxValue.substr(start, end - start);
+            }
+            else
+            {
+                heading = rxValue.substr(start);
+            }
         }
     }
 };
@@ -89,5 +139,35 @@ void BLEController::sendData(String data)
 
 std::string BLEController::getData()
 {
-    return rxCallbacks->data;
+    return readData;
+}
+
+std::string getFilePath()
+{
+    return filePath;
+}
+
+std::string getTime()
+{
+    return nowTime;
+}
+
+std::string getLatitude()
+{
+    return latitude;
+}
+
+std::string getLongitude()
+{
+    return longitude;
+}
+
+std::string getSpeed()
+{
+    return speed;
+}
+
+std::string getHeading()
+{
+    return heading;
 }
