@@ -61,7 +61,8 @@ function App() {
                   {machineData.temperature}℃
                 </div>
                 <Card>
-                  <div className="mx-auto w-fit">{machineData.speed}</div>
+                  <div className="mx-auto w-fit">{machineData.speed}km</div>
+                  <div className="mx-auto w-fit">gear:{machineData.gear}</div>
                 </Card>
                 <Card className="h-20">
                   <img
