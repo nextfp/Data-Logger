@@ -15,7 +15,7 @@ export const startGPS = (setCallbacks: (gpsStatus: gpsStatusType) => void) => {
   navigator.geolocation.watchPosition(
     (position) => {
       let { latitude, longitude, speed, heading } = position.coords;
-      speed = speed ? (speed * 3600) / 1000 : 0;
+      speed = speed ? Math.floor((speed * 3600) / 1000) : 0;
       heading = heading ? heading : -1;
       const data: gpsStatusType = {
         latitude,
