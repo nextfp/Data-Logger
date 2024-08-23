@@ -14,7 +14,11 @@
 // put function declarations here:
 BLEController *IndiBLEController = NULL;
 RPM *rpmController = new RPM;
-int loopCount = 0;
+IMU_6886 imuController;
+
+float accX = 0;
+float accY = 0;
+float accZ = 0;
 
 void setup()
 {
@@ -30,6 +34,7 @@ void setup()
   pinMode(GEAR_SENSOR_PIN, ANALOG);
   pinMode(ANGLE_SENSOR_PIN, ANALOG);
   IndiBLEController = new BLEController;
+  imuController.Init(32, 33);
   attachInterrupt(digitalPinToInterrupt(RPM_SENSOR_PIN), []()
                   { rpmController->RPMPinCallBack(); }, RISING);
 }
@@ -45,13 +50,16 @@ void loop()
   attachInterrupt(digitalPinToInterrupt(RPM_SENSOR_PIN), []()
                   { rpmController->RPMPinCallBack(); }, RISING);
   int angle = getAngle(ANGLE_SENSOR_PIN);
-  IndiBLEController->sendData(String(gear) + "," + String(rpm) + "," + String(temperature) + "," + String(angle));
+  imuController.getAccelData(&accX, &accY, &accZ);
+  IndiBLEController->sendData(String(gear) + "," + String(rpm) + "," + String(temperature) + "," + String(angle) + "," + String(accX) + "," + String(accY) + "," + String(accZ));
   M5.Lcd.setCursor(10, 10);
   M5.Display.print(gear);
   M5.Lcd.setCursor(10, 50);
   M5.Display.print(temperature);
   M5.Lcd.setCursor(10, 90);
   M5.Display.print(rpm);
+  M5.Lcd.setCursor(10, 130);
+  M5.Lcd.printf("%.2f   %.2f   %.2f   ", accX, accY, accZ);
   SD.begin(4, SPI, 15000000);
   const char *filename = ("/" + getFilePath() + ".csv").c_str();
   Serial.println(filename);
