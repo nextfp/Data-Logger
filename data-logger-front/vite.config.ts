@@ -19,7 +19,7 @@ export default defineConfig({
         theme_color: "#f69435",
         background_color: "#f69435",
         display: "fullscreen",
-        scope: "/",
+        scope: "/indicator",
         start_url: "/indicator",
         name: "indicator",
         short_name: "indicator",
