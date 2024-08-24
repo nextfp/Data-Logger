@@ -64,6 +64,6 @@ void loop()
   const char *filename = ("/" + getFilePath() + ".csv").c_str();
   Serial.println(filename);
   File file = SD.open(filename, FILE_APPEND);
-  file.println((getTime() + "," + std::to_string(gear) + "," + std::to_string(rpm) + "," + std::to_string(temperature) + "," + std::to_string(angle) + "," + getLatitude() + "," + getLongitude() + "," + getSpeed()).c_str());
+  file.println((getTime() + "," + std::to_string(gear) + "," + std::to_string(rpm) + "," + std::to_string(temperature) + "," + std::to_string(angle) + "," + getLatitude() + "," + getLongitude() + "," + getSpeed() + "," + std::to_string(accX) + "," + std::to_string(accY) + "," + std::to_string(accZ)).c_str());
   file.close();
 }
