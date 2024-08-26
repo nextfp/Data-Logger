@@ -20,7 +20,7 @@ export default defineConfig({
         background_color: "#f69435",
         display: "fullscreen",
         scope: "/indicator/",
-        start_url: "/indicator/",
+        start_url: "/",
         name: "indicator",
         short_name: "indicator",
         description: "next fp indicator",
