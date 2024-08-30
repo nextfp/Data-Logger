@@ -95,11 +95,27 @@ function App() {
                   </div>
                 </div>
               </Card>
-              <div>
-                <p>緯度:{machineData.latitude}</p>
-                <p>経度:{machineData.longitude}</p>
-                <p>向き:{machineData.heading}</p>
-              </div>
+            </div>
+          </Card>
+          <Card>
+            <div>
+              <p>緯度:{machineData.latitude}</p>
+              <p>経度:{machineData.longitude}</p>
+              <p>向き:{machineData.heading}</p>
+            </div>
+            <div>
+              <Card className="h-[700px]">
+                <div
+                  className=" bg-red-600 h-2 w-2 rounded-full"
+                  style={{
+                    transform: `translateX(${
+                      (machineData.latitude - 38.009685) * 1000000
+                    }px) translateY(${
+                      (machineData.longitude - 139.491804) * 1000000
+                    }px) rotate(${machineData.heading}deg)`,
+                  }}
+                />
+              </Card>
             </div>
           </Card>
         </div>
