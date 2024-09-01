@@ -40,15 +40,13 @@ export default function App() {
       }
       if (status !== connectionMemory) {
         setConnectionMemory(status);
-        console.log("status", status);
-        console.log("memory", connectionMemory);
         if (status) {
           toast.success("マイコンと接続されました。");
         } else {
           toast.error("マイコンとの接続が切れました。");
         }
       }
-    }, 3000);
+    }, 1000);
 
     const intervalId2 = setInterval(async () => {
       const SDFilePath = new Date().toLocaleDateString("sv-SE");
