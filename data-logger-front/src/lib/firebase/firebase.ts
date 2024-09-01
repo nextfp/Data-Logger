@@ -9,6 +9,7 @@ export interface RealtimeDatabaseHostType {
 export interface RealtimeDatabaseClientType {
   getDataValue: (callbacks: (data: databaseType) => void) => void;
   getOnlineStatus: (callbacks: (data: onlineStatusType) => void) => void;
+  setAngleCallib: (angle: number) => Promise<void>;
 }
 
 export type databaseType = {
@@ -32,6 +33,7 @@ export class RealtimeDatabase
 {
   private database: Database;
   private path: string;
+  private angleCallib: number = 0;
 
   constructor() {
     this.database = getFirebaseDatabase();
@@ -77,10 +79,20 @@ export class RealtimeDatabase
   getDataValue: (callbacks: (data: databaseType) => void) => void = (
     callbacks: (data: databaseType) => void
   ) => {
-    const dbRef = ref(this.database, "realtime");
-    onValue(dbRef, (snapshot) => {
+    const angleDbRef = ref(this.database, "angle");
+    onValue(angleDbRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
+        this.angleCallib = data.angle;
+      } else {
+        this.angleCallib = 0;
+      }
+    });
+    const machineDbRef = ref(this.database, "realtime");
+    onValue(machineDbRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        data.angle = data.angle - this.angleCallib;
         callbacks(data);
       }
     });
@@ -101,4 +113,26 @@ export class RealtimeDatabase
       }
     });
   };
+
+  setAngleCallib: (angle: number) => Promise<void> = async () => {
+    const db = getFirebaseDatabase();
+    const dbRef = ref(db, "angle");
+    await set(dbRef, {
+      time: new Date().getTime(),
+      angle: await this.angle,
+    });
+  };
+
+  get angle(): Promise<number> {
+    const machineDbRef = ref(this.database, "realtime");
+    return get(child(machineDbRef, "/")).then((snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        return data.angle;
+      } else {
+        console.error("angle is not found");
+        return 0;
+      }
+    });
+  }
 }
