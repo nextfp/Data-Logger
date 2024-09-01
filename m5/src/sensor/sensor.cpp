@@ -92,7 +92,7 @@ int getAngle(int pin)
         voltage += analogReadMilliVolts(pin);
     }
     voltage /= 10;
-    int angle = voltage - 1670;
+    int angle = voltage;
     return angle;
 };
 
