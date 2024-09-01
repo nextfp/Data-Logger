@@ -57,6 +57,9 @@ export default function App() {
           gpsStatus.longitude
         },${gpsStatus.speed},${gpsStatus.heading}`
       );
+    }, 300);
+
+    const intervalId3 = setInterval(async () => {
       realtimeDatabase.current.send({
         latitude: gpsStatus.latitude,
         longitude: gpsStatus.longitude,
@@ -67,11 +70,12 @@ export default function App() {
         temperature: machineStatus.temperature,
         angle: machineStatus.angle,
       });
-    }, 300);
+    }, 100);
 
     return () => {
       clearInterval(intervalId1);
       clearInterval(intervalId2);
+      clearInterval(intervalId3);
     };
   }, [connectionMemory, machineStatus, gpsStatus]);
 
