@@ -1,4 +1,4 @@
-import { Database, onValue, ref, set } from "firebase/database";
+import { Database, onValue, ref, set, get, child } from "firebase/database";
 import { getFirebaseDatabase } from "./getFirebase";
 
 export interface RealtimeDatabaseHostType {
@@ -23,8 +23,8 @@ export type databaseType = {
 };
 
 export type onlineStatusType = {
-  time: number;
-  bleStatus: boolean;
+  indicator: boolean;
+  ble: boolean;
 };
 
 export class RealtimeDatabase
@@ -88,10 +88,16 @@ export class RealtimeDatabase
 
   getOnlineStatus = (callbacks: (data: onlineStatusType) => void) => {
     const dbRef = ref(this.database, "online");
-    onValue(dbRef, (snapshot) => {
+    get(child(dbRef, "/")).then((snapshot) => {
       const data = snapshot.val();
       if (data) {
-        callbacks(data);
+        //const indicator = new Date().getTime() - data.time < 5000;
+        const indicator = new Date().getTime() - data.time < 5000;
+
+        const ble: boolean = indicator && data.bleStatus;
+        const status = { indicator: indicator, ble: ble };
+        console.log("status", status);
+        callbacks(status);
       }
     });
   };

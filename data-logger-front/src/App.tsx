@@ -9,8 +9,8 @@ import { Card } from "./components/ui/card";
 
 function App() {
   const [onlineStatus, setOnlineStatus] = useState<onlineStatusType>({
-    time: 0,
-    bleStatus: false,
+    indicator: false,
+    ble: false,
   });
   const [machineData, setMachineData] = useState<databaseType>({
     latitude: 0,
@@ -28,29 +28,34 @@ function App() {
   );
 
   useEffect(() => {
-    realtimeDatabase.current.getOnlineStatus((data: onlineStatusType) => {
-      setOnlineStatus(data);
-    });
+    let onlineInterval = setInterval(() => {
+      realtimeDatabase.current.getOnlineStatus((data: onlineStatusType) => {
+        setOnlineStatus(data);
+      });
+    }, 1000);
 
-    realtimeDatabase.current.getDataValue((data: databaseType) => {
-      setMachineData(data);
-      console.log(data);
-    });
+    let realtimeDataCallbacks = realtimeDatabase.current.getDataValue(
+      (data: databaseType) => {
+        setMachineData(data);
+        console.log(data);
+      }
+    );
+
+    return () => {
+      clearInterval(onlineInterval);
+      realtimeDataCallbacks = undefined;
+    };
   }, []);
   return (
     <section className="grid grid-cols-6 mt-7">
       <div className=" col-span-4 col-start-2">
         <div className="flex">
           <p>インジケータースマホ : </p>
-          {new Date().getTime() - onlineStatus.time < 4000 ? (
-            <p>オンライン</p>
-          ) : (
-            <p>オフライン</p>
-          )}
+          {onlineStatus.indicator ? <p>オンライン</p> : <p>オフライン</p>}
         </div>
         <div className="flex">
           <p>インジケータースマホとマイコンの接続 : </p>{" "}
-          {onlineStatus.bleStatus ? <p>接続中</p> : <p>接続失敗</p>}
+          {onlineStatus.ble ? <p>接続中</p> : <p>接続失敗</p>}
         </div>
         <div className="flex flex-col gap-6">
           <Card>
