@@ -40,15 +40,13 @@ export default function App() {
       }
       if (status !== connectionMemory) {
         setConnectionMemory(status);
-        console.log("status", status);
-        console.log("memory", connectionMemory);
         if (status) {
           toast.success("マイコンと接続されました。");
         } else {
           toast.error("マイコンとの接続が切れました。");
         }
       }
-    }, 3000);
+    }, 1000);
 
     const intervalId2 = setInterval(async () => {
       const SDFilePath = new Date().toLocaleDateString("sv-SE");
@@ -57,6 +55,9 @@ export default function App() {
           gpsStatus.longitude
         },${gpsStatus.speed},${gpsStatus.heading}`
       );
+    }, 300);
+
+    const intervalId3 = setInterval(async () => {
       realtimeDatabase.current.send({
         latitude: gpsStatus.latitude,
         longitude: gpsStatus.longitude,
@@ -67,11 +68,12 @@ export default function App() {
         temperature: machineStatus.temperature,
         angle: machineStatus.angle,
       });
-    }, 300);
+    }, 100);
 
     return () => {
       clearInterval(intervalId1);
       clearInterval(intervalId2);
+      clearInterval(intervalId3);
     };
   }, [connectionMemory, machineStatus, gpsStatus]);
 
