@@ -34,16 +34,13 @@ function App() {
       });
     }, 1000);
 
-    let realtimeDataCallbacks = realtimeDatabase.current.getDataValue(
-      (data: databaseType) => {
-        setMachineData(data);
-        console.log(data);
-      }
-    );
+    realtimeDatabase.current.getDataValue((data: databaseType) => {
+      setMachineData(data);
+      console.log(data);
+    });
 
     return () => {
       clearInterval(onlineInterval);
-      realtimeDataCallbacks = undefined;
     };
   }, []);
   return (

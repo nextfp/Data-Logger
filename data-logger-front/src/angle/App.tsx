@@ -23,16 +23,12 @@ export default function App() {
   );
 
   useEffect(() => {
-    let realtimeDataCallbacks = realtimeDatabase.current.getDataValue(
-      (data: databaseType) => {
-        setMachineData(data);
-        console.log(data);
-      }
-    );
+    realtimeDatabase.current.getDataValue((data: databaseType) => {
+      setMachineData(data);
+      console.log(data);
+    });
 
-    return () => {
-      realtimeDataCallbacks = undefined;
-    };
+    return () => {};
   }, []);
 
   return (
