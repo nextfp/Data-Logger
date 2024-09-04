@@ -47,19 +47,24 @@ function App() {
     };
   }, []);
   return (
-    <section className="grid grid-cols-6 mt-7">
-      <div className=" col-span-4 col-start-2">
-        <div className="flex">
-          <p>インジケータースマホ : </p>
-          {onlineStatus.indicator ? <p>オンライン</p> : <p>オフライン</p>}
+    <main>
+      <a href="/log/" className="text-blue-400">
+        過去のログの閲覧はこちら
+      </a>
+      <section className="grid grid-cols-6 mt-7">
+        <div className=" col-span-4 col-start-2">
+          <div className="flex">
+            <p>インジケータースマホ : </p>
+            {onlineStatus.indicator ? <p>オンライン</p> : <p>オフライン</p>}
+          </div>
+          <div className="flex">
+            <p>インジケータースマホとマイコンの接続 : </p>{" "}
+            {onlineStatus.ble ? <p>接続中</p> : <p>接続失敗</p>}
+          </div>
+          <LogViewer machineData={machineData} />
         </div>
-        <div className="flex">
-          <p>インジケータースマホとマイコンの接続 : </p>{" "}
-          {onlineStatus.ble ? <p>接続中</p> : <p>接続失敗</p>}
-        </div>
-        <LogViewer machineData={machineData} />
-      </div>
-    </section>
+      </section>
+    </main>
   );
 }
 

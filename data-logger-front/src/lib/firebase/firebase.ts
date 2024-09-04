@@ -1,4 +1,15 @@
-import { Database, onValue, ref, set, get, child } from "firebase/database";
+import {
+  Database,
+  onValue,
+  ref,
+  set,
+  get,
+  child,
+  query,
+  orderByKey,
+  limitToFirst,
+  startAfter,
+} from "firebase/database";
 import { getFirebaseDatabase } from "./getFirebase";
 
 export interface RealtimeDatabaseHostType {
@@ -8,6 +19,10 @@ export interface RealtimeDatabaseHostType {
 
 export interface RealtimeDatabaseClientType {
   getDataValue: (callbacks: (data: databaseType) => void) => void;
+  getlogData: (
+    path: string,
+    startTime: string
+  ) => Promise<Record<string, databaseType>>;
   getOnlineStatus: (callbacks: (data: onlineStatusType) => void) => void;
   setAngleCallib: (angle: number) => Promise<void>;
 }
@@ -96,6 +111,25 @@ export class RealtimeDatabase
         callbacks(data);
       }
     });
+  };
+
+  getlogData: (
+    path: string,
+    startTime: string
+  ) => Promise<Record<string, databaseType>> = async (
+    path: string,
+    startTime: string
+  ) => {
+    const dbRef = ref(this.database, path);
+    const q = query(
+      dbRef,
+      orderByKey(),
+      startAfter(startTime),
+      limitToFirst(500)
+    );
+    const snapshot = await get(q);
+    const data = snapshot.val();
+    return data;
   };
 
   getOnlineStatus = (callbacks: (data: onlineStatusType) => void) => {
