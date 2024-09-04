@@ -46,6 +46,7 @@ export default defineConfig({
         main: path.resolve(root, "index.html"),
         indicator: path.resolve(root, "indicator/index.html"),
         any: path.resolve(root, "angle/index.html"),
+        log: path.resolve(root, "log/index.html"),
       },
     },
   },
